@@ -64,16 +64,16 @@ runs:
       id: trigger-workflow-and-wait
       shell: bash
       env:
-        owner: ${{ inputs.owner }}
-        repo: ${{ inputs.repo }}
-        github_token: ${{ inputs.github_token }}
-        github_user: ${{ inputs.github_user }}
-        ref: ${{ inputs.ref }}
-        wait_interval: ${{ inputs.wait_interval }}
-        workflow_file_name: ${{ inputs.workflow_file_name }}
-        client_payload: ${{ inputs.client_payload }}
-        propagate_failure: ${{ inputs.propagate_failure }}
-        trigger_workflow: ${{ inputs.trigger_workflow }}
-        wait_workflow: ${{ inputs.wait_workflow }}
-        comment_downstream_url: ${{ inputs.comment_downstream_url }}
-        comment_github_token: ${{ inputs.comment_github_token }}
+        INPUT_OWNER: ${{ inputs.owner }}
+        INPUT_REPO: ${{ inputs.repo }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUT_GITHUB_USER: ${{ inputs.github_user }}
+        INPUT_REF: ${{ inputs.ref }}
+        INPUT_WAIT_INTERVAL: ${{ inputs.wait_interval }}
+        INPUT_WORKFLOW_FILE_NAME: ${{ inputs.workflow_file_name }}
+        INPUT_CLIENT_PAYLOAD: ${{ inputs.client_payload }}
+        INPUT_PROPAGATE_FAILURE: ${{ inputs.propagate_failure }}
+        INPUT_TRIGGER_WORKFLOW: ${{ inputs.trigger_workflow }}
+        INPUT_WAIT_WORKFLOW: ${{ inputs.wait_workflow }}
+        INPUT_COMMENT_DOWNSTREAM_URL: ${{ inputs.comment_downstream_url }}
+        INPUT_COMMENT_GITHUB_TOKEN: ${{ inputs.comment_github_token }}
