@@ -6,7 +6,6 @@ Github Action for trigger a workflow from another workflow. The action then wait
 
 When deploying an app you may need to deploy additional services, this Github Action helps with that.
 
-
 ## Arguments
 
 | Argument Name            | Required   | Default     | Description           |

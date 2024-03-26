@@ -1,6 +1,6 @@
-name: 'Trigger Workflow and Wait'
+name: 'Trigger Workflow and Wait - Composite Action'
 description: 'This action triggers a workflow in another repository and waits for the result.'
-author: 'Convictional'
+author: 'joshjohanning'
 branding:
   icon: 'arrow-right'
   color: 'yellow'
@@ -49,10 +49,31 @@ inputs:
 outputs:
   workflow_id:
     description: The ID of the workflow that was triggered by this action
+    value: ${{ steps.trigger-workflow-and-wait.outputs.workflow_id }}
   workflow_url:
     description: The URL of the workflow that was triggered by this action
+    value: ${{ steps.trigger-workflow-and-wait.outputs.workflow_url }}
   conclusion:
     description: Conclusion of the job, i.e pass/failure
+    value: ${{ steps.trigger-workflow-and-wait.outputs.conclusion }}
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: 'composite'
+  steps:
+    - name: Trigger Workflow and Wait
+      run: ${{ github.action_path }}/script.sh
+      id: trigger-workflow-and-wait
+      shell: bash
+      env:
+        owner: ${{ inputs.owner }}
+        repo: ${{ inputs.repo }}
+        github_token: ${{ inputs.github_token }}
+        github_user: ${{ inputs.github_user }}
+        ref: ${{ inputs.ref }}
+        wait_interval: ${{ inputs.wait_interval }}
+        workflow_file_name: ${{ inputs.workflow_file_name }}
+        client_payload: ${{ inputs.client_payload }}
+        propagate_failure: ${{ inputs.propagate_failure }}
+        trigger_workflow: ${{ inputs.trigger_workflow }}
+        wait_workflow: ${{ inputs.wait_workflow }}
+        comment_downstream_url: ${{ inputs.comment_downstream_url }}
+        comment_github_token: ${{ inputs.comment_github_token }}
