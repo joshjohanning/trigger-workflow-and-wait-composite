@@ -69,6 +69,12 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    # TODO: remove this dependency
+    - name: install gh-token
+      run: gh extension install link-/gh-token
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
     - name: Trigger Workflow and Wait
       run: ${{ github.action_path }}/script.sh
       id: trigger-workflow-and-wait
