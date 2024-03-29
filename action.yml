@@ -13,7 +13,7 @@ inputs:
     required: true
   github_token:
     description: "The Github access token with access to the repository. It is recommended you put this token under secrets."
-    required: true
+    required: false
   github_user:
     description: "The name of the github user whose access token is being used to trigger the workflow."
     required: false
@@ -22,6 +22,7 @@ inputs:
     required: false
   wait_interval:
     description: "The number of seconds delay between checking for result of run."
+    default: '10'
     required: false
   workflow_file_name:
     description: "The reference point. For example, you could use main.yml."
@@ -46,6 +47,15 @@ inputs:
     description: "The Github access token with access to the repository for comment URL. It is recommended you put this token under secrets."
     required: false
     default: ${{ github.token }}
+  github_app_id:
+    description: "If you are using a GitHub App, you can provide the App ID here and we will generate the token. NOTE: This is only used if github_token is not provided."
+    required: false
+  github_app_installation_id:
+    description: "If you are using a GitHub App, you can provide the Installation ID here and we will generate the token. NOTE: This is only used if github_token is not provided."
+    required: false
+  github_app_private_key:
+    description: "If you are using a GitHub App, you can provide the Private Key secret value here and we will generate the token. NOTE: This is only used if github_token is not provided."
+    required: false
 outputs:
   workflow_id:
     description: The ID of the workflow that was triggered by this action
@@ -77,3 +87,6 @@ runs:
         INPUT_WAIT_WORKFLOW: ${{ inputs.wait_workflow }}
         INPUT_COMMENT_DOWNSTREAM_URL: ${{ inputs.comment_downstream_url }}
         INPUT_COMMENT_GITHUB_TOKEN: ${{ inputs.comment_github_token }}
+        INPUT_GITHUB_APP_ID: ${{ inputs.github_app_id }}
+        INPUT_GITHUB_APP_INSTALLATION_ID: ${{ inputs.github_app_installation_id }}
+        INPUT_GITHUB_APP_PRIVATE_KEY: ${{ inputs.github_app_private_key }}

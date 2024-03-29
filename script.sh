@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+# set -exo pipefail
+
 usage_docs() {
   echo ""
   echo "You can use this Github Action with:"
@@ -53,13 +55,21 @@ validate_args() {
     exit 1
   fi
 
+  # checks to see if either 1. Github token is provided or 2. Github App and the (3) required fields are provided
   if [ -z "${INPUT_GITHUB_TOKEN}" ]
   then
-    echo "Error: Github token is required. You can head over settings and"
-    echo "under developer, you can create a personal access tokens. The"
-    echo "token requires repo access."
-    usage_docs
-    exit 1
+    if [ -z "${INPUT_GITHUB_APP_ID}" ] && [ -z "${INPUT_GITHUB_APP_INSTALLATION_ID}" ] && [ -z "${INPUT_GITHUB_APP_PRIVATE_KEY}" ]
+    then
+      echo "Error: Github token or App information is required."
+      echo "The token requires at least Actions permissions."
+      usage_docs
+      exit 1
+    else
+      get_app_token
+      using_github_app=true
+    fi
+  else
+    token=${INPUT_GITHUB_TOKEN}
   fi
 
   if [ -z "${INPUT_WORKFLOW_FILE_NAME}" ]
@@ -82,16 +92,18 @@ validate_args() {
   fi
 }
 
+# this doesn't appear to be used?
 lets_wait() {
   echo "Sleeping for ${wait_interval} seconds"
   sleep "$wait_interval"
 }
 
 api() {
+  echo "API DEBUG: TOKEN = $token" >> debug.txt
   path=$1; shift
   if response=$(curl --fail-with-body -sSL \
       "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/$path" \
-      -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
+      -H "Authorization: Bearer ${token}" \
       -H 'Accept: application/vnd.github.v3+json' \
       -H 'Content-Type: application/json' \
       "$@")
@@ -113,6 +125,25 @@ lets_wait() {
   local interval=${1:-$wait_interval}
   echo >&2 "Sleeping for $interval seconds"
   sleep "$interval"
+
+  if [ "$using_github_app" = true ]; then
+    # lets see if we are close to needing a new token (within 5 mins+$wait_interval)
+    current_time=$(date +%s)
+    expiration_time=$(date -d"$app_token_expiration" +%s)
+    echo "Current time: $current_time" >&2
+    echo "Expiration time: $expiration_time" >&2
+
+    # Add 5 minutes (300 seconds) and the wait_interval to the current time
+    current_time_plus_interval=$((current_time + 1 + wait_interval))
+    echo $current_time_plus_interval >&2
+
+    if [ "$current_time_plus_interval" -ge "$expiration_time" ]; then
+      echo "YO WHAT UP THIS IS RUNNING!" >&2
+      echo "Current time is within 5 minutes + wait_interval of app_token_expiration - we need to get a new app token"  >&2
+      get_app_token   >&2
+      echo "new app token retrieved, carrying on"   >&2
+    fi
+  fi
 }
 
 # Return the ids of the most recent workflow runs, optionally filtered by user
@@ -153,6 +184,7 @@ trigger_workflow() {
 }
 
 comment_downstream_link() {
+  # TODO: needs curl --version > 7.76.0
   if response=$(curl --fail-with-body -sSL -X POST \
       "${INPUT_COMMENT_DOWNSTREAM_URL}" \
       -H "Authorization: Bearer ${INPUT_COMMENT_GITHUB_TOKEN}" \
@@ -209,6 +241,16 @@ wait_for_workflow_to_finish() {
       exit 1
     fi
   fi
+}
+
+get_app_token() {
+  base64key=$(echo -n "$INPUT_GITHUB_APP_PRIVATE_KEY" | base64)
+  echo " - getting app token"
+  app_token_info=$(gh token generate --app-id "${INPUT_GITHUB_APP_ID}" --installation-id "${INPUT_GITHUB_APP_INSTALLATION_ID}" --base64-key "${base64key}")
+  token=$(echo "${app_token_info}" | jq -r '.token')
+  app_token_expiration=$(echo "${app_token_info}" | jq -r '.expires_at')
+  echo " - app token retrieved"
+  echo " - app_token_expiration=${app_token_expiration}"
 }
 
 main() {
