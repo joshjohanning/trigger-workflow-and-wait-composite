@@ -130,18 +130,14 @@ lets_wait() {
     # lets see if we are close to needing a new token (within 5 mins+$wait_interval)
     current_time=$(date +%s)
     expiration_time=$(date -d"$app_token_expiration" +%s)
-    echo "Current time: $current_time" >&2
-    echo "Expiration time: $expiration_time" >&2
 
     # Add 5 minutes (300 seconds) and the wait_interval to the current time
     current_time_plus_interval=$((current_time + 1 + wait_interval))
-    echo $current_time_plus_interval >&2
 
     if [ "$current_time_plus_interval" -ge "$expiration_time" ]; then
-      echo "YO WHAT UP THIS IS RUNNING!" >&2
-      echo "Current time is within 5 minutes + wait_interval of app_token_expiration - we need to get a new app token"  >&2
-      get_app_token   >&2
-      echo "new app token retrieved, carrying on"   >&2
+      echo "  - Current time is within 5 minutes + wait_interval of app_token_expiration - we need to get a new app token" >&2
+      get_app_token >&2
+      echo "  - new app token retrieved, carrying on" >&2
     fi
   fi
 }
